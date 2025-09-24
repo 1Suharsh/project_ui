@@ -1,0 +1,13 @@
+{
+  "name": "pm-internship-recommender",
+  "version": "1.0.0",
+  "description": "Personalized internship recommendation system for youth in India",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel dev"
+  },
+  "devDependencies": {
+    "vercel": "^28.16.4"
+  }
+}

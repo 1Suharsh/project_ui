@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM Internship Recommender</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .login-container.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .login-box {
+            background: rgba(15, 52, 96, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: loginBoxAppear 0.8s ease-out;
+        }
+
+        @keyframes loginBoxAppear {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(123, 47, 247, 0.1) 0%, rgba(123, 47, 247, 0) 70%);
+            animation: rotate 30s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 2.5rem;
+            color: #7b2ff7;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(123, 47, 247, 0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .login-header p {
+            color: #b0b0b0;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #7b2ff7;
+            box-shadow: 0 0 0 2px rgba(123, 47, 247, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 15px;
+            top: 42px;
+            color: #7b2ff7;
+        }
+
+        .login-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+
+        .remember-me input {
+            margin-right: 8px;
+            accent-color: #7b2ff7;
+        }
+
+        .forgot-password {
+            color: #7b2ff7;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            color: #ff2a6d;
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(123, 47, 247, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(123, 47, 247, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(123, 47, 247, 0); }
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(123, 47, 247, 0.6);
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: -1;
+        }
+
+        .login-btn:hover::before {
+            transform: translateX(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #b0b0b0;
+            animation: fadeIn 1s ease-out 0.6s both;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            animation: fadeIn 1s ease-out 0.8s both;
+        }
+
+        .social-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .signup-link {
+            text-align: center;
+            color: #b0b0b0;
+            animation: fadeIn 1s ease-out 1s both;
+        }
+
+        .signup-link a {
+            color: #7b2ff7;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .signup-link a:hover {
+            color: #ff2a6d;
+            text-decoration: underline;
+        }
+
+        /* Floating Elements Animation */
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(123, 47, 247, 0.1);
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-duration: 18s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation-duration: 20s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 40%;
+            left: 70%;
+            animation-duration: 15s;
+        }
+
+        .floating-element:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 20%;
+            animation-duration: 22s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+            }
+            25% {
+                transform: translateY(-20px) translateX(10px);
+            }
+            50% {
+                transform: translateY(0) translateX(20px);
+            }
+            75% {
+                transform: translateY(20px) translateX(10px);
+            }
+        }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(255, 42, 109, 0.2);
+            color: #ff2a6d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 3px solid #ff2a6d;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* Demo Credentials */
+        .demo-credentials {
+            background: rgba(123, 47, 247, 0.1);
+            border: 1px solid rgba(123, 47, 247, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-out 0.2s both;
+        }
+
+        .demo-credentials h3 {
+            color: #7b2ff7;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .demo-credentials p {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        /* Main App Styles */
+        .app-container {
+            display: none;
+        }
+
+        .app-container.active {
+            display: block;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #7b2ff7;
+            text-shadow: 0 0 10px rgba(123, 47, 247, 0.3);
+            margin-right: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 42, 109, 0.2);
+            border-color: rgba(255, 42, 109, 0.3);
+        }
+
+        .language-toggle {
+            background: #0f3460;
+            border: none;
+            color: #e0e0e0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .language-toggle:hover {
+            background: #0d2847;
+            transform: scale(1.05);
+        }
+
+        /* Landing Page */
+        .landing {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(123, 47, 247, 0.1) 0%, rgba(123, 47, 247, 0) 70%);
+            animation: rotate 30s linear infinite;
+            z-index: -1;
+        }
+
+        .landing h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #7b2ff7;
+            text-shadow: 0 0 10px rgba(123, 47, 247, 0.5);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .landing p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            max-width: 700px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(123, 47, 247, 0.4);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            animation: pulse 2s infinite;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(123, 47, 247, 0.6);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            transform: translateX(0);
+        }
+
+        /* Form Section */
+        .form-section {
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .form-section h2 {
+            color: #7b2ff7;
+            margin-bottom: 25px;
+            font-size: 2rem;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(123, 47, 247, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #7b2ff7;
+            box-shadow: 0 0 0 2px rgba(123, 47, 247, 0.2);
+            transform: scale(1.02);
+        }
+
+        .skills-container, .sectors-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .skill-tag, .sector-tag {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-tag:hover, .sector-tag:hover {
+            background: rgba(123, 47, 247, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .skill-tag.active, .sector-tag.active {
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            color: white;
+            animation: tagPulse 0.6s ease;
+        }
+
+        @keyframes tagPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(123, 47, 247, 0.1);
+        }
+
+        .checkbox-item input {
+            width: 18px;
+            height: 18px;
+            accent-color: #7b2ff7;
+        }
+
+        /* Recommendations Section */
+        .recommendations {
+            display: none;
+        }
+
+        .recommendations.active {
+            display: block;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .section-title {
+            color: #7b2ff7;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(123, 47, 247, 0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .internships-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .internship-card {
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .internship-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #7b2ff7, #ff2a6d);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .internship-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .internship-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(123, 47, 247, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: #7b2ff7;
+            font-weight: 600;
+        }
+
+        .card-sector {
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .card-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e0e0e0;
+            margin-bottom: 15px;
+        }
+
+        .card-description {
+            color: #e0e0e0;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .card-apply {
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            align-self: flex-start;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .card-apply::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: -1;
+        }
+
+        .card-apply:hover::before {
+            transform: translateX(0);
+        }
+
+        .card-apply:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(123, 47, 247, 0.4);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #e0e0e0;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .back-btn {
+            background: #0f3460;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+
+        .back-btn:hover {
+            background: #0d2847;
+            transform: translateX(-5px);
+        }
+
+        /* Chatbot */
+        .chatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(123, 47, 247, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(123, 47, 247, 0.6);
+        }
+
+        .chatbot-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 450px;
+            background: #16213e;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chatbot-window.active {
+            display: flex;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            padding: 15px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .chatbot-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .chatbot-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 15px;
+            word-wrap: break-word;
+            animation: messageSlide 0.4s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            background: rgba(15, 52, 96, 0.5);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user {
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chatbot-input input {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 10px 15px;
+            color: white;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-input input:focus {
+            outline: none;
+            border-color: #7b2ff7;
+            box-shadow: 0 0 0 2px rgba(123, 47, 247, 0.2);
+        }
+
+        .chatbot-input button {
+            background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-input button:hover {
+            transform: scale(1.1);
+        }
+
+        /* OpenAI API Key Section */
+        .openai-settings {
+            padding: 15px;
+            background: rgba(15, 52, 96, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .openai-settings h4 {
+            margin-bottom: 10px;
+            color: #7b2ff7;
+            font-size: 0.9rem;
+        }
+
+        .openai-settings p {
+            font-size: 0.8rem;
+            color: #b0b0b0;
+            margin-bottom: 10px;
+        }
+
+        .openai-key-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .openai-key-input input {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .openai-key-input button {
+            background: #7b2ff7;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .openai-key-input button:hover {
+            background: #6329d4;
+        }
+
+        .openai-status {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: #4caf50;
+            display: none;
+        }
+
+        .openai-status.error {
+            color: #ff5252;
+        }
+
+        /* Loading Animation */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #7b2ff7;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Debug Info */
+        .debug-info {
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            display: none;
+        }
+
+        .debug-toggle {
+            background: rgba(123, 47, 247, 0.3);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .landing h1 {
+                font-size: 2.5rem;
+            }
+            
+            .landing p {
+                font-size: 1.2rem;
+            }
+            
+            .internships-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chatbot-window {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+            }
+            
+            .login-box {
+                padding: 30px 20px;
+            }
+            
+            .login-header h1 {
+                font-size: 2rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .header-left {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .social-login {
+                gap: 10px;
+            }
+            
+            .social-btn {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .openai-key-input {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-container" id="loginContainer">
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        
+        <div class="login-box">
+            <div class="login-header">
+                <h1>PM Internship Recommender</h1>
+                <p>Login to access personalized internship recommendations</p>
+            </div>
+            
+            <div class="demo-credentials">
+                <h3><i class="fas fa-info-circle"></i> Demo Credentials</h3>
+                <p><strong>Admin:</strong> Username: admin, Password: password</p>
+                <p><strong>User:</strong> Username: user, Password: user</p>
+            </div>
+            
+            <div class="error-message" id="errorMessage">
+                Invalid username or password. Please try again.
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                    <i class="fas fa-user"></i>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                    <i class="fas fa-lock"></i>
+                </div>
+                
+                <div class="login-options">
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+            
+            <div class="divider">
+                <span>or</span>
+            </div>
+            
+            <div class="social-login">
+                <div class="social-btn">
+                    <i class="fab fa-google"></i>
+                </div>
+                <div class="social-btn">
+                    <i class="fab fa-facebook-f"></i>
+                </div>
+                <div class="social-btn">
+                    <i class="fab fa-linkedin-in"></i>
+                </div>
+            </div>
+            
+            <div class="signup-link">
+                Don't have an account? <a href="#" id="signupLink">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-container" id="appContainer">
+        <div class="container">
+            <header class="header">
+                <div class="header-left">
+                    <div class="logo">PM Internship Recommender</div>
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span class="user-name" id="userName">User</span>
+                    </div>
+                </div>
+                <div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                    <button class="language-toggle" id="languageToggle">
+                        <span id="currentLang">English</span>
+                        <i class="fas fa-globe"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Landing Page -->
+            <section class="landing" id="landing">
+                <h1 id="landingTitle">PM Internship Recommender</h1>
+                <p id="landingSubtitle">Personalized internship suggestions for youth across India</p>
+                <button class="btn" id="getStartedBtn">Get Started</button>
+            </section>
+
+            <!-- Form Section -->
+            <section class="form-section" id="formSection" style="display: none;">
+                <h2 id="formTitle">Find Your Perfect Internship</h2>
+                <form id="internshipForm">
+                    <div class="form-group">
+                        <label for="education" id="educationLabel">Education</label>
+                        <select id="education" class="form-control">
+                            <option value="">Select Education</option>
+                            <option value="12th pass">12th pass</option>
+                            <option value="Diploma">Diploma</option>
+                            <option value="Undergraduate">Undergraduate</option>
+                            <option value="Postgraduate">Postgraduate</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="skillsLabel">Skills</label>
+                        <div class="skills-container">
+                            <div class="skill-tag" data-skill="Communication">Communication</div>
+                            <div class="skill-tag" data-skill="Coding">Coding</div>
+                            <div class="skill-tag" data-skill="Data Analysis">Data Analysis</div>
+                            <div class="skill-tag" data-skill="Marketing">Marketing</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="sectorsLabel">Sector Interests</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="it" value="IT">
+                                <label for="it">IT</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="education" value="Education">
+                                <label for="education">Education</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="agriculture" value="Agriculture">
+                                <label for="agriculture">Agriculture</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="healthcare" value="Healthcare">
+                                <label for="healthcare">Healthcare</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="government" value="Government">
+                                <label for="government">Government</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="social" value="Social Work">
+                                <label for="social">Social Work</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="finance" value="Finance">
+                                <label for="finance">Finance</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ngo" value="NGO">
+                                <label for="ngo">NGO</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="media" value="Media">
+                                <label for="media">Media</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="hr" value="HR">
+                                <label for="hr">HR</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location" id="locationLabel">Location Preference</label>
+                        <select id="location" class="form-control">
+                            <option value="">Select Location</option>
+                            <option value="Bengaluru">Bengaluru</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                            <option value="Pune">Pune</option>
+                            <option value="Chennai">Chennai</option>
+                            <option value="Kolkata">Kolkata</option>
+                            <option value="Ahmedabad">Ahmedabad</option>
+                            <option value="Jaipur">Jaipur</option>
+                            <option value="Lucknow">Lucknow</option>
+                            <option value="Patna">Patna</option>
+                            <option value="Bhopal">Bhopal</option>
+                            <option value="Chandigarh">Chandigarh</option>
+                            <option value="Ranchi">Ranchi</option>
+                            <option value="Noida">Noida</option>
+                            <option value="Gurugram">Gurugram</option>
+                            <option value="Bhubaneswar">Bhubaneswar</option>
+                            <option value="Surat">Surat</option>
+                            <option value="Goa">Goa</option>
+                            <option value="Indore">Indore</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn" id="findInternshipsBtn">Find My Internships</button>
+                </form>
+                
+                <button class="debug-toggle" id="debugToggle">Show Debug Info</button>
+                <div class="debug-info" id="debugInfo"></div>
+            </section>
+
+            <!-- Recommendations Section -->
+            <section class="recommendations" id="recommendations">
+                <h2 class="section-title" id="recommendationsTitle">Recommended Internships</h2>
+                <div class="internships-grid" id="internshipsGrid">
+                    <!-- Internship cards will be dynamically added here -->
+                </div>
+                <div class="no-results" id="noResults" style="display: none;">
+                    <p>No internships match your criteria. Please try different options.</p>
+                </div>
+                <button class="back-btn" id="backBtn">
+                    <i class="fas fa-arrow-left"></i> Search Again
+                </button>
+            </section>
+        </div>
+
+        <!-- Chatbot -->
+        <div class="chatbot" id="chatbotContainer">
+            <button class="chatbot-toggle" id="chatbotToggle">
+                <i class="fas fa-comments"></i>
+            </button>
+            <div class="chatbot-window" id="chatbotWindow">
+                <div class="chatbot-header">
+                    <span id="chatbotTitle">Assistant</span>
+                    <button class="chatbot-close" id="chatbotClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="chatbot-messages" id="chatbotMessages">
+                    <div class="message bot">Hello! I'm your assistant. How can I help you today?</div>
+                </div>
+                <div class="chatbot-input">
+                    <input type="text" id="chatbotInput" placeholder="Type a message...">
+                    <button id="chatbotSend">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                
+                <!-- OpenAI API Key Section -->
+                <div class="openai-settings">
+                    <h4><i class="fas fa-key"></i> OpenAI API Key</h4>
+                    <p>Enter your API key to enable AI-powered responses. Get your key at platform.openai.com</p>
+                    <div class="openai-key-input">
+                        <input type="password" id="openaiKey" placeholder="sk-..." />
+                        <button id="saveOpenAIKey">Save</button>
+                    </div>
+                    <div class="openai-status" id="openaiStatus">API key saved successfully!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Internship Data
+        const internshipData = [
+            {
+                id: 1,
+                title: "Software Development Intern",
+                sector: "IT",
+                location: "Bengaluru",
+                description: "Learn to build scalable web applications using modern frameworks. Work with experienced developers on real projects.",
+                skills: ["Coding"],
+                education: ["Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 2,
+                title: "Digital Marketing Intern",
+                sector: "Marketing",
+                location: "Delhi",
+                description: "Create engaging social media content and analyze campaign metrics. Learn SEO and digital advertising strategies.",
+                skills: ["Marketing", "Communication"],
+                education: ["12th pass", "Diploma", "Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 3,
+                title: "Teaching Assistant",
+                sector: "Education",
+                location: "Lucknow",
+                description: "Support teachers in classroom activities and help develop educational materials. Gain experience in curriculum development.",
+                skills: ["Communication"],
+                education: ["Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 4,
+                title: "Data Entry Intern",
+                sector: "Government",
+                location: "Ranchi",
+                description: "Accurately input and manage government records. Learn about administrative processes and data management systems.",
+                skills: ["Data Analysis"],
+                education: ["12th pass", "Diploma"]
+            },
+            {
+                id: 5,
+                title: "Social Media Intern",
+                sector: "NGO",
+                location: "Mumbai",
+                description: "Manage social media accounts for a non-profit organization. Create content to raise awareness about social issues.",
+                skills: ["Marketing", "Communication"],
+                education: ["12th pass", "Diploma", "Undergraduate"]
+            },
+            {
+                id: 6,
+                title: "Agri-Tech Field Intern",
+                sector: "Agriculture",
+                location: "Patna",
+                description: "Work with farmers to implement agricultural technology solutions. Learn about sustainable farming practices.",
+                skills: ["Data Analysis"],
+                education: ["Diploma", "Undergraduate"]
+            },
+            {
+                id: 7,
+                title: "Healthcare Support Intern",
+                sector: "Healthcare",
+                location: "Jaipur",
+                description: "Assist healthcare professionals with administrative tasks and patient care coordination. Learn about healthcare systems.",
+                skills: ["Communication"],
+                education: ["Diploma", "Undergraduate"]
+            },
+            {
+                id: 8,
+                title: "Finance Assistant",
+                sector: "Finance",
+                location: "Pune",
+                description: "Support financial analysis and reporting tasks. Learn about financial planning and investment strategies.",
+                skills: ["Data Analysis"],
+                education: ["Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 9,
+                title: "Content Writing Intern",
+                sector: "Media",
+                location: "Kolkata",
+                description: "Create engaging content for various platforms including blogs, websites, and social media. Develop your writing skills.",
+                skills: ["Communication", "Marketing"],
+                education: ["12th pass", "Diploma", "Undergraduate"]
+            },
+            {
+                id: 10,
+                title: "Web Development Intern",
+                sector: "IT",
+                location: "Hyderabad",
+                description: "Build responsive websites using HTML, CSS, and JavaScript. Learn modern web development frameworks and tools.",
+                skills: ["Coding"],
+                education: ["Diploma", "Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 11,
+                title: "Cybersecurity Intern",
+                sector: "IT",
+                location: "Noida",
+                description: "Learn about cybersecurity threats and defense mechanisms. Assist in security audits and vulnerability assessments.",
+                skills: ["Coding"],
+                education: ["Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 12,
+                title: "HR Support Intern",
+                sector: "HR",
+                location: "Chennai",
+                description: "Assist with recruitment processes and employee onboarding. Learn about HR policies and workplace culture.",
+                skills: ["Communication"],
+                education: ["Diploma", "Undergraduate"]
+            },
+            {
+                id: 13,
+                title: "Rural Development Intern",
+                sector: "Social Work",
+                location: "Bhopal",
+                description: "Work on community development projects in rural areas. Learn about sustainable development practices.",
+                skills: ["Communication"],
+                education: ["Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 14,
+                title: "Graphic Design Intern",
+                sector: "Creative",
+                location: "Chandigarh",
+                description: "Create visual content for marketing and branding purposes. Learn design principles and software tools.",
+                skills: ["Marketing"],
+                education: ["12th pass", "Diploma", "Undergraduate"]
+            },
+            {
+                id: 15,
+                title: "Legal Research Intern",
+                sector: "Law",
+                location: "Delhi",
+                description: "Assist with legal research and case preparation. Learn about the Indian legal system and various laws.",
+                skills: ["Communication"],
+                education: ["Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 16,
+                title: "Civil Engineering Intern",
+                sector: "Infrastructure",
+                location: "Surat",
+                description: "Assist with infrastructure project planning and execution. Learn about construction techniques and project management.",
+                skills: ["Data Analysis"],
+                education: ["Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 17,
+                title: "Business Analysis Intern",
+                sector: "Consulting",
+                location: "Gurugram",
+                description: "Analyze business processes and recommend improvements. Learn about business strategy and operations.",
+                skills: ["Data Analysis", "Communication"],
+                education: ["Undergraduate", "Postgraduate"]
+            },
+            {
+                id: 18,
+                title: "E-Governance Support Intern",
+                sector: "Government",
+                location: "Bhubaneswar",
+                description: "Support digital governance initiatives and help citizens access government services online.",
+                skills: ["Communication"],
+                education: ["Diploma", "Undergraduate"]
+            },
+            {
+                id: 19,
+                title: "Event Management Intern",
+                sector: "Hospitality",
+                location: "Goa",
+                description: "Plan and coordinate events for various organizations. Learn about event logistics and vendor management.",
+                skills: ["Communication", "Marketing"],
+                education: ["12th pass", "Diploma", "Undergraduate"]
+            },
+            {
+                id: 20,
+                title: "Environmental Research Intern",
+                sector: "Environment",
+                location: "Indore",
+                description: "Conduct research on environmental issues and sustainability initiatives. Learn about conservation practices.",
+                skills: ["Data Analysis"],
+                education: ["Undergraduate", "Postgraduate"]
+            }
+        ];
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Login functionality
+            const loginForm = document.getElementById('loginForm');
+            const loginContainer = document.getElementById('loginContainer');
+            const appContainer = document.getElementById('appContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            
+            // Form and navigation
+            const getStartedBtn = document.getElementById('getStartedBtn');
+            const formSection = document.getElementById('formSection');
+            const landing = document.getElementById('landing');
+            const internshipForm = document.getElementById('internshipForm');
+            const recommendations = document.getElementById('recommendations');
+            const backBtn = document.getElementById('backBtn');
+            const findInternshipsBtn = document.getElementById('findInternshipsBtn');
+            
+            // Chatbot
+            const chatbotToggle = document.getElementById('chatbotToggle');
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            const chatbotClose = document.getElementById('chatbotClose');
+            const chatbotInput = document.getElementById('chatbotInput');
+            const chatbotSend = document.getElementById('chatbotSend');
+            const chatbotMessages = document.getElementById('chatbotMessages');
+            
+            // OpenAI API
+            const saveOpenAIKey = document.getElementById('saveOpenAIKey');
+            const openaiKey = document.getElementById('openaiKey');
+            const openaiStatus = document.getElementById('openaiStatus');
+            
+            // Language toggle
+            const languageToggle = document.getElementById('languageToggle');
+            const currentLang = document.getElementById('currentLang');
+            
+            // Debug info
+            const debugToggle = document.getElementById('debugToggle');
+            const debugInfo = document.getElementById('debugInfo');
+            
+            // Check if user is already logged in
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                const savedUsername = localStorage.getItem('username') || 'User';
+                showApp(savedUsername);
+            }
+            
+            // Login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Simple authentication (in a real app, this would be server-side)
+                if ((username === 'admin' && password === 'password') || 
+                    (username === 'user' && password === 'user')) {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('username', username);
+                    showApp(username);
+                } else {
+                    errorMessage.style.display = 'block';
+                    setTimeout(() => {
+                        errorMessage.style.display = 'none';
+                    }, 3000);
+                }
+            });
+            
+            // Show app after login
+            function showApp(username) {
+                userAvatar.textContent = username.charAt(0).toUpperCase();
+                userName.textContent = username;
+                loginContainer.classList.add('hidden');
+                appContainer.classList.add('active');
+            }
+            
+            // Logout functionality
+            logoutBtn.addEventListener('click', function() {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('username');
+                loginContainer.classList.remove('hidden');
+                appContainer.classList.remove('active');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                resetApp();
+            });
+            
+            // Reset app state
+            function resetApp() {
+                landing.style.display = 'flex';
+                formSection.style.display = 'none';
+                recommendations.classList.remove('active');
+                internshipForm.reset();
+                document.querySelectorAll('.skill-tag').forEach(tag => {
+                    tag.classList.remove('active');
+                });
+            }
+            
+            // Get started button
+            getStartedBtn.addEventListener('click', function() {
+                landing.style.display = 'none';
+                formSection.style.display = 'block';
+            });
+            
+            // Skill tag selection
+            const skillTags = document.querySelectorAll('.skill-tag');
+            skillTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                });
+            });
+            
+            // Form submission
+            internshipForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const education = document.getElementById('education').value;
+                const location = document.getElementById('location').value;
+                
+                // Get selected skills
+                const selectedSkills = Array.from(document.querySelectorAll('.skill-tag.active'))
+                    .map(tag => tag.dataset.skill);
+                
+                // Get selected sectors
+                const selectedSectors = Array.from(document.querySelectorAll('.checkbox-item input:checked'))
+                    .map(checkbox => checkbox.value);
+                
+                // Debug info
+                const debugData = {
+                    education,
+                    selectedSkills,
+                    selectedSectors,
+                    location
+                };
+                
+                if (debugInfo.style.display === 'block') {
+                    debugInfo.textContent = JSON.stringify(debugData, null, 2);
+                }
+                
+                // If no filters are selected, show all internships
+                if (!education && !location && selectedSkills.length === 0 && selectedSectors.length === 0) {
+                    displayInternships(internshipData);
+                    formSection.style.display = 'none';
+                    recommendations.classList.add('active');
+                    return;
+                }
+                
+                // Filter internships
+                const filteredInternships = filterInternships(education, selectedSkills, selectedSectors, location);
+                
+                // Display results
+                displayInternships(filteredInternships);
+                
+                // Show recommendations section
+                formSection.style.display = 'none';
+                recommendations.classList.add('active');
+            });
+            
+            // Filter internships based on criteria
+            function filterInternships(education, skills, sectors, location) {
+                return internshipData.filter(internship => {
+                    // Match education (if selected)
+                    if (education && !internship.education.includes(education)) {
+                        return false;
+                    }
+                    
+                    // Match location (if selected)
+                    if (location && internship.location !== location) {
+                        return false;
+                    }
+                    
+                    // Match skills (if any selected)
+                    if (skills.length > 0) {
+                        const hasMatchingSkill = skills.some(skill => 
+                            internship.skills.includes(skill)
+                        );
+                        if (!hasMatchingSkill) return false;
+                    }
+                    
+                    // Match sectors (if any selected)
+                    if (sectors.length > 0) {
+                        const hasMatchingSector = sectors.includes(internship.sector);
+                        if (!hasMatchingSector) return false;
+                    }
+                    
+                    return true;
+                });
+            }
+            
+            // Display internships
+            function displayInternships(internships) {
+                const internshipsGrid = document.getElementById('internshipsGrid');
+                const noResults = document.getElementById('noResults');
+                
+                // Clear previous results
+                internshipsGrid.innerHTML = '';
+                
+                if (internships.length === 0) {
+                    noResults.style.display = 'block';
+                    return;
+                }
+                
+                noResults.style.display = 'none';
+                
+                // Create internship cards
+                internships.forEach(internship => {
+                    const card = document.createElement('div');
+                    card.className = 'internship-card';
+                    
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <h3 class="card-title">${internship.title}</h3>
+                            <span class="card-sector">${internship.sector}</span>
+                        </div>
+                        <div class="card-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${internship.location}</span>
+                        </div>
+                        <p class="card-description">${internship.description}</p>
+                        <button class="card-apply" data-id="${internship.id}">Apply Now</button>
+                    `;
+                    
+                    internshipsGrid.appendChild(card);
+                });
+                
+                // Add event listeners to apply buttons
+                document.querySelectorAll('.card-apply').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const internshipId = this.getAttribute('data-id');
+                        const internship = internshipData.find(i => i.id == internshipId);
+                        showApplicationConfirmation(internship);
+                    });
+                });
+            }
+            
+            // Show application confirmation
+            function showApplicationConfirmation(internship) {
+                const confirmation = document.createElement('div');
+                confirmation.className = 'confirmation-modal';
+                confirmation.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                    animation: fadeIn 0.3s ease-out;
+                `;
+                
+                confirmation.innerHTML = `
+                    <div style="
+                        background: linear-gradient(135deg, #1a1a2e, #16213e);
+                        border-radius: 15px;
+                        padding: 30px;
+                        max-width: 500px;
+                        width: 90%;
+                        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        animation: slideUp 0.5s ease-out;
+                    ">
+                        <h3 style="color: #7b2ff7; margin-bottom: 20px; text-align: center;">Application Submitted!</h3>
+                        <p style="margin-bottom: 20px; text-align: center;">
+                            Your application for <strong>${internship.title}</strong> at ${internship.location} has been submitted successfully.
+                        </p>
+                        <div style="text-align: center;">
+                            <button id="closeConfirmation" style="
+                                background: linear-gradient(45deg, #7b2ff7, #ff2a6d);
+                                color: white;
+                                border: none;
+                                padding: 10px 25px;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                font-weight: 600;
+                            ">Close</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(confirmation);
+                
+                document.getElementById('closeConfirmation').addEventListener('click', function() {
+                    confirmation.remove();
+                });
+            }
+            
+            // Back button
+            backBtn.addEventListener('click', function() {
+                recommendations.classList.remove('active');
+                formSection.style.display = 'block';
+            });
+            
+            // Chatbot functionality
+            chatbotToggle.addEventListener('click', function() {
+                chatbotWindow.classList.toggle('active');
+            });
+            
+            chatbotClose.addEventListener('click', function() {
+                chatbotWindow.classList.remove('active');
+            });
+            
+            // Send chat message
+            function sendChatMessage() {
+                const message = chatbotInput.value.trim();
+                if (!message) return;
+                
+                // Add user message
+                addChatMessage(message, 'user');
+                chatbotInput.value = '';
+                
+                // Simulate bot response (in a real app, this would call an API)
+                setTimeout(() => {
+                    const botResponse = getBotResponse(message);
+                    addChatMessage(botResponse, 'bot');
+                }, 1000);
+            }
+            
+            chatbotSend.addEventListener('click', sendChatMessage);
+            
+            chatbotInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+            
+            // Add chat message to UI
+            function addChatMessage(message, sender) {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${sender}`;
+                messageElement.textContent = message;
+                chatbotMessages.appendChild(messageElement);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            }
+            
+            // Get bot response (simple rule-based responses)
+            function getBotResponse(message) {
+                const lowerMessage = message.toLowerCase();
+                
+                if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+                    return "Hello! How can I help you with your internship search today?";
+                } else if (lowerMessage.includes('internship')) {
+                    return "I can help you find the perfect internship! Just fill out the form with your preferences, and I'll recommend opportunities that match your profile.";
+                } else if (lowerMessage.includes('skill') || lowerMessage.includes('skills')) {
+                    return "Skills are important for finding the right internship. Make sure to select all your relevant skills in the form to get better recommendations.";
+                } else if (lowerMessage.includes('location') || lowerMessage.includes('city')) {
+                    return "We have internship opportunities in many cities across India. Select your preferred location in the form to see local opportunities.";
+                } else if (lowerMessage.includes('education')) {
+                    return "We have internships for all education levels, from 12th pass to postgraduate. Select your current education level in the form.";
+                } else if (lowerMessage.includes('sector') || lowerMessage.includes('industry')) {
+                    return "We offer internships in various sectors including IT, Education, Healthcare, Government, and more. Select all sectors that interest you.";
+                } else if (lowerMessage.includes('help')) {
+                    return "I'm here to help! You can ask me about internships, skills, locations, education requirements, or any other questions about the application process.";
+                } else if (lowerMessage.includes('thank')) {
+                    return "You're welcome! Is there anything else I can help you with?";
+                } else {
+                    return "I'm not sure how to respond to that. Try asking about internships, skills, locations, or education requirements.";
+                }
+            }
+            
+            // Save OpenAI API key
+            saveOpenAIKey.addEventListener('click', function() {
+                const apiKey = openaiKey.value.trim();
+                if (apiKey) {
+                    localStorage.setItem('openaiApiKey', apiKey);
+                    openaiStatus.textContent = 'API key saved successfully!';
+                    openaiStatus.classList.remove('error');
+                    openaiStatus.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        openaiStatus.style.display = 'none';
+                    }, 3000);
+                } else {
+                    openaiStatus.textContent = 'Please enter a valid API key';
+                    openaiStatus.classList.add('error');
+                    openaiStatus.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        openaiStatus.style.display = 'none';
+                    }, 3000);
+                }
+            });
+            
+            // Load saved API key
+            const savedApiKey = localStorage.getItem('openaiApiKey');
+            if (savedApiKey) {
+                openaiKey.value = savedApiKey;
+            }
+            
+            // Language toggle
+            let isHindi = false;
+            languageToggle.addEventListener('click', function() {
+                isHindi = !isHindi;
+                if (isHindi) {
+                    currentLang.textContent = 'हिन्दी';
+                    translateToHindi();
+                } else {
+                    currentLang.textContent = 'English';
+                    translateToEnglish();
+                }
+            });
+            
+            // Translation functions
+            function translateToHindi() {
+                document.getElementById('landingTitle').textContent = 'पीएम इंटर्नशिप रिकमेंडर';
+                document.getElementById('landingSubtitle').textContent = 'भारत भर के युवाओं के लिए व्यक्तिगत इंटर्नशिप सुझाव';
+                document.getElementById('getStartedBtn').textContent = 'शुरू करें';
+                document.getElementById('formTitle').textContent = 'अपना बिल्कुल सही इंटर्नशिप खोजें';
+                document.getElementById('educationLabel').textContent = 'शिक्षा';
+                document.getElementById('skillsLabel').textContent = 'कौशल';
+                document.getElementById('sectorsLabel').textContent = 'क्षेत्र में रुचि';
+                document.getElementById('locationLabel').textContent = 'स्थान पसंद';
+                document.getElementById('findInternshipsBtn').textContent = 'मेरे इंटर्नशिप खोजें';
+                document.getElementById('recommendationsTitle').textContent = 'अनुशंसित इंटर्नशिप';
+                document.getElementById('backBtn').innerHTML = '<i class="fas fa-arrow-left"></i> फिर से खोजें';
+                document.getElementById('chatbotTitle').textContent = 'सहायक';
+            }
+            
+            function translateToEnglish() {
+                document.getElementById('landingTitle').textContent = 'PM Internship Recommender';
+                document.getElementById('landingSubtitle').textContent = 'Personalized internship suggestions for youth across India';
+                document.getElementById('getStartedBtn').textContent = 'Get Started';
+                document.getElementById('formTitle').textContent = 'Find Your Perfect Internship';
+                document.getElementById('educationLabel').textContent = 'Education';
+                document.getElementById('skillsLabel').textContent = 'Skills';
+                document.getElementById('sectorsLabel').textContent = 'Sector Interests';
+                document.getElementById('locationLabel').textContent = 'Location Preference';
+                document.getElementById('findInternshipsBtn').textContent = 'Find My Internships';
+                document.getElementById('recommendationsTitle').textContent = 'Recommended Internships';
+                document.getElementById('backBtn').innerHTML = '<i class="fas fa-arrow-left"></i> Search Again';
+                document.getElementById('chatbotTitle').textContent = 'Assistant';
+            }
+            
+            // Debug info toggle
+            debugToggle.addEventListener('click', function() {
+                if (debugInfo.style.display === 'block') {
+                    debugInfo.style.display = 'none';
+                    debugToggle.textContent = 'Show Debug Info';
+                } else {
+                    debugInfo.style.display = 'block';
+                    debugToggle.textContent = 'Hide Debug Info';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
